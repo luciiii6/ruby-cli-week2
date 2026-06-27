@@ -17,6 +17,10 @@ class GemInfo
     @data['licenses']
   end
 
+  def downloads
+    @data['downloads']
+  end
+
   def to_s
     [name, info].join(':')
   end

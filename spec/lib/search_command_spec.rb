@@ -50,6 +50,26 @@ RSpec.describe SearchCommand do
       end
     end
 
+    context 'when --most-downloads-first is passed' do
+      let(:args) { ['rails', '--most-downloads-first'] }
+      let(:response) do
+        [
+          { 'name' => 'low',  'info' => 'a', 'downloads' => 1 },
+          { 'name' => 'high', 'info' => 'b', 'downloads' => 100 }
+        ]
+      end
+
+      before do
+        allow(client).to receive(:search).with('rails').and_return(response)
+      end
+
+      it 'orders gems by downloads descending' do
+        result = execute
+
+        expect(result.exit_description).to eq("high:b\nlow:a")
+      end
+    end
+
     context 'when --license is passed' do
       let(:args) { ['rails', '--license', 'MIT'] }
       let(:response) do
@@ -68,6 +88,36 @@ RSpec.describe SearchCommand do
 
         expect(result.exit_description).to include('rails')
         expect(result.exit_description).not_to include('other')
+      end
+    end
+
+    context 'when both options are passed' do
+      let(:response) do
+        [
+          { 'name' => 'low_mit',  'info' => 'a', 'licenses' => ['MIT'], 'downloads' => 10 },
+          { 'name' => 'high_mit', 'info' => 'b', 'licenses' => ['MIT'], 'downloads' => 100 },
+          { 'name' => 'high_bsd', 'info' => 'c', 'licenses' => ['BSD'], 'downloads' => 1_000 }
+        ]
+      end
+
+      before do
+        allow(client).to receive(:search).with('rails').and_return(response)
+      end
+
+      context 'with --license before --most-downloads-first' do
+        let(:args) { ['rails', '--license', 'MIT', '--most-downloads-first'] }
+
+        it 'filters then sorts and matches the other order' do
+          expect(execute.exit_description).to eq("high_mit:b\nlow_mit:a")
+        end
+      end
+
+      context 'with --most-downloads-first before --license' do
+        let(:args) { ['rails', '--most-downloads-first', '--license', 'MIT'] }
+
+        it 'sorts then filters and matches the other order' do
+          expect(execute.exit_description).to eq("high_mit:b\nlow_mit:a")
+        end
       end
     end
   end
