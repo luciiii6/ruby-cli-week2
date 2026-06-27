@@ -49,5 +49,26 @@ RSpec.describe SearchCommand do
         expect(result.exit_code).to eq 0
       end
     end
+
+    context 'when --license is passed' do
+      let(:args) { ['rails', '--license', 'MIT'] }
+      let(:response) do
+        [
+          { 'name' => 'rails',  'info' => 'web', 'licenses' => ['MIT'] },
+          { 'name' => 'other',  'info' => 'x',   'licenses' => ['BSD'] }
+        ]
+      end
+
+      before do
+        allow(client).to receive(:search).with('rails').and_return(response)
+      end
+
+      it 'only shows gems with the matching license' do
+        result = execute
+
+        expect(result.exit_description).to include('rails')
+        expect(result.exit_description).not_to include('other')
+      end
+    end
   end
 end

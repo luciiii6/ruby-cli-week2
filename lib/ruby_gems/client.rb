@@ -10,7 +10,7 @@ module RubyGems
 
     def initialize
       @connection = Faraday.new(url: BASE_URL) do |connection|
-        connection.headers['Authorization'] = ENV['API_KEY']
+        connection.headers['Authorization'] = ENV.fetch('API_KEY', nil)
       end
     end
 

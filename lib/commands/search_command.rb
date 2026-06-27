@@ -5,6 +5,7 @@ require './lib/gem_info'
 require './lib/ruby_gems/client'
 require './lib/commands/command'
 require './lib/errors/missing_gem_name_error'
+require './lib/search/search_options_parser'
 
 class SearchCommand < Command
   def initialize(client = RubyGems::Client.new)
@@ -13,18 +14,15 @@ class SearchCommand < Command
   end
 
   def execute(args)
-    raise MissingGemNameError if args[0].nil?
+    gem_name = args[0]
+    raise MissingGemNameError if gem_name.nil?
 
-    response = @client.search(args[0])
+    options = SearchOptionsParser.parse(args[1..])
+    gems = @client.search(gem_name).map { |data| GemInfo.new(data) }
+    options.each { |option| gems = option.apply(gems) }
 
-    return ProgramResult.new(0, 'No gems were found.') if response.empty?
+    return ProgramResult.new(0, 'No gems were found.') if gems.empty?
 
-
-    description = response
-                    .map { |gem| GemInfo.new(gem['name'], gem['info']) }
-                    .map { |gem_info| gem_info.to_s }
-                    .join("\n")
-
-    ProgramResult.new(0, description)
+    ProgramResult.new(0, gems.map(&:to_s).join("\n"))
   end
 end

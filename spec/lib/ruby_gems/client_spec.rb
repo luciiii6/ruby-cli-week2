@@ -65,7 +65,7 @@ RSpec.describe RubyGems::Client do
       let(:api_key) { 'test-api-key' }
 
       before do
-        allow(ENV).to receive(:[]).with('API_KEY').and_return(api_key)
+        allow(ENV).to receive(:fetch).with('API_KEY', nil).and_return(api_key)
         allow(connection).to receive(:headers).and_return(headers)
         allow(Faraday).to receive(:new)
           .with(url: 'https://rubygems.org/api/v1')
