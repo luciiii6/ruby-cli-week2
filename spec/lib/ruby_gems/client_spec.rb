@@ -4,8 +4,6 @@ require './lib/ruby_gems/client'
 require './lib/errors/gem_not_found_error'
 
 RSpec.describe RubyGems::Client do
-  subject(:show) { client.show(gem_name) }
-
   let(:connection) { instance_double(Faraday::Connection) }
   let(:client) { described_class.new }
   let(:gem_name) { 'rails' }
@@ -19,9 +17,11 @@ RSpec.describe RubyGems::Client do
   end
 
   describe '#show' do
+    subject(:show) { client.show(gem_name) }
+
     context 'when the gem exists' do
       let(:status) { 200 }
-      let(:body)   { fixture('rails.json') }
+      let(:body)   { fixture('show/rails.json') }
 
       it 'returns the gem name' do
         expect(show['name']).to eq('rails')
@@ -43,6 +43,51 @@ RSpec.describe RubyGems::Client do
 
       it 'raises GemNotFoundError' do
         expect { show }.to raise_error(GemNotFoundError)
+      end
+    end
+  end
+
+  describe '#search' do
+    subject(:search) { client.search(gem_name) }
+
+    let(:response) { instance_double(Faraday::Response, status: status, body: body) }
+
+
+    before do
+      allow(Faraday).to receive(:new)
+                          .with(url: 'https://rubygems.org/api/v1')
+                          .and_return(connection)
+    end
+
+    context 'when no gem exists with this name' do
+      let(:status) { 200 }
+      let(:body) { fixture('search/empty.json') }
+
+      before do
+        allow(connection).to receive(:get).with("search").and_return(response)
+      end
+
+      it 'returns an empty array' do
+        result = search
+
+        expect(result).to be_empty
+      end
+    end
+
+    context 'when a list of gems is returned' do
+      let(:status) { 200 }
+      let(:body) { fixture('search/rails.json') }
+
+      before do
+        allow(connection).to receive(:get).with("search").and_return(response)
+      end
+
+      it 'returns a list of gems' do
+        result = search
+
+        gem = result.first
+        expect(result).not_to be_empty
+        expect(gem['name']).to eq 'rails'
       end
     end
   end
