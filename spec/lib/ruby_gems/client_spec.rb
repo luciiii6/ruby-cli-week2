@@ -58,6 +58,27 @@ RSpec.describe RubyGems::Client do
         .and_return(connection)
     end
 
+    context 'when an API key is set' do
+      let(:status) { 200 }
+      let(:body)   { '[]' }
+      let(:headers) { {} }
+      let(:api_key) { 'test-api-key' }
+
+      before do
+        allow(ENV).to receive(:[]).with('API_KEY').and_return(api_key)
+        allow(connection).to receive(:headers).and_return(headers)
+        allow(Faraday).to receive(:new)
+          .with(url: 'https://rubygems.org/api/v1')
+          .and_yield(connection)
+          .and_return(connection)
+      end
+
+      it 'sets the Authorization header on the connection' do
+        client
+        expect(headers['Authorization']).to eq('test-api-key')
+      end
+    end
+
     context 'when no gem exists with this name' do
       let(:status) { 200 }
       let(:body) { fixture('search/empty.json') }

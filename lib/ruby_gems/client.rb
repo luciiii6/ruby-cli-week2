@@ -9,7 +9,9 @@ module RubyGems
     BASE_URL = 'https://rubygems.org/api/v1'
 
     def initialize
-      @connection = Faraday.new(url: BASE_URL)
+      @connection = Faraday.new(url: BASE_URL) do |connection|
+        connection.headers['Authorization'] = ENV['API_KEY']
+      end
     end
 
     def show(gem_name)
