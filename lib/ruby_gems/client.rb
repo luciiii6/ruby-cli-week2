@@ -20,8 +20,8 @@ module RubyGems
     end
 
     def search(gem_name)
-      response = @connection.get("search") do |request|
-        request.params = { query: gem_name}
+      response = @connection.get('search') do |request|
+        request.params = { query: gem_name }
       end
 
       JSON.parse(response.body)

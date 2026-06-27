@@ -6,6 +6,10 @@ require './lib/errors/unknown_command_error'
 
 RSpec.describe CommandFactory do
   describe '.find' do
+    it 'returns a SearchCommand for "show"' do
+      expect(described_class.find('search')).to be_a(SearchCommand)
+    end
+
     it 'returns a ShowCommand for "show"' do
       expect(described_class.find('show')).to be_a(ShowCommand)
     end

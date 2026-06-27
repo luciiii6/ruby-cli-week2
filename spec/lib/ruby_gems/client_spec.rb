@@ -52,11 +52,10 @@ RSpec.describe RubyGems::Client do
 
     let(:response) { instance_double(Faraday::Response, status: status, body: body) }
 
-
     before do
       allow(Faraday).to receive(:new)
-                          .with(url: 'https://rubygems.org/api/v1')
-                          .and_return(connection)
+        .with(url: 'https://rubygems.org/api/v1')
+        .and_return(connection)
     end
 
     context 'when no gem exists with this name' do
@@ -64,7 +63,7 @@ RSpec.describe RubyGems::Client do
       let(:body) { fixture('search/empty.json') }
 
       before do
-        allow(connection).to receive(:get).with("search").and_return(response)
+        allow(connection).to receive(:get).with('search').and_return(response)
       end
 
       it 'returns an empty array' do
@@ -79,7 +78,7 @@ RSpec.describe RubyGems::Client do
       let(:body) { fixture('search/rails.json') }
 
       before do
-        allow(connection).to receive(:get).with("search").and_return(response)
+        allow(connection).to receive(:get).with('search').and_return(response)
       end
 
       it 'returns a list of gems' do

@@ -7,4 +7,8 @@ class GemInfo
     @name = name
     @info = info
   end
+
+  def to_s
+    [name, info].join(':')
+  end
 end
