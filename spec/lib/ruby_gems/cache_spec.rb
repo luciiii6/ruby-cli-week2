@@ -8,12 +8,8 @@ require './lib/ruby_gems/cache'
 describe RubyGems::Cache do
   subject(:cache) { described_class.new }
 
-  let(:tmpdir) { Dir.mktmpdir }
   let(:key)    { 'rails' }
-  let(:path)   { File.join(tmpdir, "#{key}.json") }
-
-  before { stub_const('RubyGems::Cache::CACHE_DIR', tmpdir) }
-  after  { FileUtils.remove_entry(tmpdir) }
+  let(:path)   { File.join(described_class::CACHE_DIR, "#{key}.json") }
 
   describe '.fetch' do
     context 'when the key is not in the cache' do
