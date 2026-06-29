@@ -23,6 +23,6 @@ class SearchCommand < Command
 
     return ProgramResult.new(0, 'No gems were found.') if gems.empty?
 
-    ProgramResult.new(0, gems.map(&:to_s).join("\n"))
+    ProgramResult.new(0, gems.join("\n"))
   end
 end

@@ -9,7 +9,7 @@ RSpec.describe LicenseOption do
   let(:license) { 'MIT' }
   let(:gems) do
     [
-      GemInfo.new({ 'name' => 'rails',   'info' => 'web',  'licenses' => ['MIT'] }),
+      GemInfo.new({ 'name' => 'rails',   'info' => 'web', 'licenses' => ['MIT'] }),
       GemInfo.new({ 'name' => 'sinatra', 'info' => 'micro', 'licenses' => ['BSD'] }),
       GemInfo.new({ 'name' => 'rspec',   'info' => 'test', 'licenses' => ['MIT', 'Apache-2.0'] })
     ]

@@ -35,7 +35,7 @@ RSpec.describe SearchCommand do
       end
     end
 
-    context 'gems are returned' do
+    context 'when gems are returned' do
       let(:args) { ['rails'] }
       let(:response) { JSON.parse(fixture('search/rails.json')) }
 

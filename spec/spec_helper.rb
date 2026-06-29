@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+ENV['APP_ENV'] = 'test'
+
+require './lib/ruby_gems/cache'
+
 module Fixtures
   FIXTURES_DIR = File.expand_path('fixtures', __dir__)
 
@@ -20,4 +24,6 @@ RSpec.configure do |config|
   end
 
   config.shared_context_metadata_behavior = :apply_to_host_groups
+
+  config.after { RubyGems::Cache.new.clear }
 end

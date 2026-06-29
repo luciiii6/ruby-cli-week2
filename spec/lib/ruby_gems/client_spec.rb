@@ -89,7 +89,6 @@ RSpec.describe RubyGems::Client do
 
       it 'returns an empty array' do
         result = search
-
         expect(result).to be_empty
       end
     end
@@ -104,7 +103,6 @@ RSpec.describe RubyGems::Client do
 
       it 'returns a list of gems' do
         result = search
-
         gem = result.first
         expect(result).not_to be_empty
         expect(gem['name']).to eq 'rails'
