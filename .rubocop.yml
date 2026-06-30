@@ -20,3 +20,7 @@ Metrics/BlockLength:
 
 RSpec/MultipleMemoizedHelpers:
   Max: 8
+
+Style/RedundantFetchBlock:
+  Exclude:
+    - 'spec/lib/ruby_gems/cache_spec.rb'

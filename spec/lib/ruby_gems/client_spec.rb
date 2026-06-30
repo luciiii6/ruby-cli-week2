@@ -1,27 +1,35 @@
 # frozen_string_literal: true
 
 require './lib/ruby_gems/client'
+require './lib/ruby_gems/cache'
 require './lib/errors/gem_not_found_error'
+require './lib/errors/client_error'
+require './lib/errors/server_error'
 
 RSpec.describe RubyGems::Client do
   let(:connection) { instance_double(Faraday::Connection) }
-  let(:client) { described_class.new }
+  let(:cache) { instance_double(RubyGems::Cache) }
+  let(:client) { described_class.new(cache: cache) }
   let(:gem_name) { 'rails' }
-  let(:response) { instance_double(Faraday::Response, status: status, body: body) }
+  let(:body) { '{}' }
+  let(:response) { instance_double(Faraday::Response, body: body) }
 
   before do
     allow(Faraday).to receive(:new)
       .with(url: 'https://rubygems.org/api/v1')
       .and_return(connection)
-    allow(connection).to receive(:get).with("gems/#{gem_name}.json").and_return(response)
+    allow(cache).to receive(:fetch) { |_key, &block| JSON.parse(block.call) }
   end
 
   describe '#show' do
     subject(:show) { client.show(gem_name) }
 
+    before do
+      allow(connection).to receive(:get).with("gems/#{gem_name}.json").and_return(response)
+    end
+
     context 'when the gem exists' do
-      let(:status) { 200 }
-      let(:body)   { fixture('show/rails.json') }
+      let(:body) { fixture('show/rails.json') }
 
       it 'returns the gem name' do
         expect(show['name']).to eq('rails')
@@ -36,13 +44,39 @@ RSpec.describe RubyGems::Client do
       end
     end
 
-    context 'when the gem does not exist' do
-      let(:gem_name) { 'nope' }
-      let(:status)   { 404 }
-      let(:body)     { nil }
+    context 'when the gem is not found' do
+      before do
+        allow(connection).to receive(:get)
+          .with("gems/#{gem_name}.json")
+          .and_raise(Faraday::ResourceNotFound, 'not found')
+      end
 
       it 'raises GemNotFoundError' do
         expect { show }.to raise_error(GemNotFoundError)
+      end
+    end
+
+    context 'when the request is a client error' do
+      before do
+        allow(connection).to receive(:get)
+          .with("gems/#{gem_name}.json")
+          .and_raise(Faraday::ClientError, 'bad request')
+      end
+
+      it 'raises ClientError' do
+        expect { show }.to raise_error(ClientError)
+      end
+    end
+
+    context 'when the server fails' do
+      before do
+        allow(connection).to receive(:get)
+          .with("gems/#{gem_name}.json")
+          .and_raise(Faraday::ServerError, 'boom')
+      end
+
+      it 'raises ServerError' do
+        expect { show }.to raise_error(ServerError)
       end
     end
   end
@@ -50,23 +84,19 @@ RSpec.describe RubyGems::Client do
   describe '#search' do
     subject(:search) { client.search(gem_name) }
 
-    let(:response) { instance_double(Faraday::Response, status: status, body: body) }
-
     before do
-      allow(Faraday).to receive(:new)
-        .with(url: 'https://rubygems.org/api/v1')
-        .and_return(connection)
+      allow(connection).to receive(:get).with('search').and_return(response)
     end
 
     context 'when an API key is set' do
-      let(:status) { 200 }
-      let(:body)   { '[]' }
+      let(:body) { '[]' }
       let(:headers) { {} }
       let(:api_key) { 'test-api-key' }
 
       before do
         allow(ENV).to receive(:fetch).with('API_KEY', nil).and_return(api_key)
         allow(connection).to receive(:headers).and_return(headers)
+        allow(connection).to receive(:response).with(:raise_error)
         allow(Faraday).to receive(:new)
           .with(url: 'https://rubygems.org/api/v1')
           .and_yield(connection)
@@ -80,32 +110,32 @@ RSpec.describe RubyGems::Client do
     end
 
     context 'when no gem exists with this name' do
-      let(:status) { 200 }
       let(:body) { fixture('search/empty.json') }
 
-      before do
-        allow(connection).to receive(:get).with('search').and_return(response)
-      end
-
       it 'returns an empty array' do
-        result = search
-        expect(result).to be_empty
+        expect(search).to be_empty
       end
     end
 
     context 'when a list of gems is returned' do
-      let(:status) { 200 }
       let(:body) { fixture('search/rails.json') }
 
-      before do
-        allow(connection).to receive(:get).with('search').and_return(response)
+      it 'returns a list of gems' do
+        expect(search).not_to be_empty
       end
 
-      it 'returns a list of gems' do
-        result = search
-        gem = result.first
-        expect(result).not_to be_empty
-        expect(gem['name']).to eq 'rails'
+      it 'returns gems with the right name' do
+        expect(search.first['name']).to eq('rails')
+      end
+    end
+
+    context 'when the server fails' do
+      before do
+        allow(connection).to receive(:get).with('search').and_raise(Faraday::ServerError, 'boom')
+      end
+
+      it 'raises ServerError' do
+        expect { search }.to raise_error(ServerError)
       end
     end
   end
