@@ -9,7 +9,7 @@ class Program
   def execute(args)
     raise NoCommandError if args.empty?
 
-    CommandFactory.find(args[0]).execute(args[1..])
+    CommandFactory.create(args[0]).execute(args[1..])
   rescue CLIError => e
     ProgramResult.new(e.exit_code, e.message)
   end

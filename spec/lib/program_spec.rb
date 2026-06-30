@@ -35,7 +35,7 @@ RSpec.describe Program do
       let(:argv) { %w[show] }
 
       before do
-        allow(CommandFactory).to receive(:find).with('show').and_return(command)
+        allow(CommandFactory).to receive(:create).with('show').and_return(command)
         allow(command).to receive(:execute).with([]).and_raise(MissingGemNameError)
       end
 
@@ -53,7 +53,7 @@ RSpec.describe Program do
       let(:argv) { %w[show nope] }
 
       before do
-        allow(CommandFactory).to receive(:find).with('show').and_return(command)
+        allow(CommandFactory).to receive(:create).with('show').and_return(command)
         allow(command).to receive(:execute).with(['nope']).and_raise(GemNotFoundError)
       end
 
@@ -67,7 +67,7 @@ RSpec.describe Program do
       let(:argv) { %w[show rails] }
 
       before do
-        allow(CommandFactory).to receive(:find).with('show').and_return(command)
+        allow(CommandFactory).to receive(:create).with('show').and_return(command)
         allow(command).to receive(:execute).with(['rails']).and_return(ProgramResult.new(0, 'ok'))
       end
 
@@ -85,7 +85,7 @@ RSpec.describe Program do
       let(:argv) { %w[search rspec --license MIT] }
 
       before do
-        allow(CommandFactory).to receive(:find).with('search').and_return(command)
+        allow(CommandFactory).to receive(:create).with('search').and_return(command)
         allow(command).to receive(:execute)
           .with(['rspec', '--license', 'MIT'])
           .and_return(ProgramResult.new(0, 'ok'))

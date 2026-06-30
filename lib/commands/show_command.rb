@@ -16,8 +16,7 @@ class ShowCommand < Command
     gem_name = args.first
     raise MissingGemNameError if gem_name.nil?
 
-    response = @client.show(gem_name)
-    gem = GemInfo.new(response['name'], response['info'])
+    gem = GemInfo.new(@client.show(gem_name))
     ProgramResult.new(0, "Gem name: #{gem.name}\nGem info: #{gem.info}")
   end
 end

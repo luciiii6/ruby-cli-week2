@@ -13,3 +13,4 @@
 .bundle/
 vendor/bundle/
 .idea/
+.env

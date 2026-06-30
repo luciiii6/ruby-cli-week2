@@ -31,7 +31,7 @@ RSpec.describe ShowCommand do
 
     context 'when the gem exists' do
       let(:args) { ['rails'] }
-      let(:rails_data) { JSON.parse(fixture('rails.json')) }
+      let(:rails_data) { JSON.parse(fixture('show/rails.json')) }
 
       before { allow(client).to receive(:show).with('rails').and_return(rails_data) }
 
